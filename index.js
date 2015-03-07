@@ -6,15 +6,15 @@ var fs = require('fs');
 var express = require('express');
 var mongoose = require('mongoose');
 var passport = require('passport');
-var config = require('config');
+var config = require('./config/config');
+var utils = require('./lib/utils');
 
 var app = express();
-var port = process.env.PORT || 8080;
 
 // Connect to mongodb
 var connect = function () {
-  var options = { server: { socketOptions: { keepAlive: 1 } } };
-  mongoose.connect(config.db, options);
+    var options = {server: {socketOptions: {keepAlive: 1}}};
+    mongoose.connect(config.db, options);
 };
 connect();
 
@@ -26,9 +26,6 @@ fs.readdirSync(__dirname + '/app/models').forEach(function (file) {
     if (~file.indexOf('.js')) require(__dirname + '/app/models/' + file);
 });
 
-// Bootstrap passport config
-require('./config/passport')(passport, config);
-
 // Bootstrap application settings
 require('./config/express')(app, passport);
 
@@ -36,4 +33,7 @@ require('./config/express')(app, passport);
  * Expose
  */
 
-module.exports = app;
+module.exports = {
+    app: app,
+    utils: utils
+};

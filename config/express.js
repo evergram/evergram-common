@@ -10,8 +10,7 @@ var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
 
 var mongoStore = require('connect-mongo')(session);
-var config = require('config');
-var pkg = require('../package.json');
+var config = require('./config');
 
 /**
  * Expose
@@ -34,7 +33,7 @@ module.exports = function (app, passport) {
     app.use(session({
         resave: true,
         saveUninitialized: true,
-        secret: pkg.name,
+        secret: 'evergram',
         store: new mongoStore({
             url: config.db,
             collection: 'sessions'

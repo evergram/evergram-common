@@ -1,0 +1,43 @@
+{
+    "name": "evergram-common",
+    "description": "Evergram's common functionality",
+    "keywords": [
+        "express",
+        "mongoose",
+        "mongodb",
+        "passport"
+    ],
+    "version": "0.0.1",
+    "private": true,
+    "author": "Josh Stuart",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/evergram/evergram-common.git"
+    },
+    "engines": {
+        "node": "0.11.13"
+    },
+    "scripts": {
+        "start": "NODE_PATH=./config:./app/controllers NODE_ENV=development ./node_modules/.bin/nodemon common.js",
+        "test": "NODE_PATH=./config:./app/controllers NODE_ENV=test ./node_modules/.bin/mocha --reporter spec --timeout 10000 test/test-*.js"
+    },
+    "dependencies": {
+        "body-parser": "1.8.2",
+        "compression": "1.1.0",
+        "connect-mongo": "0.4.1",
+        "cookie-parser": "1.3.3",
+        "cookie-session": "1.0.2",
+        "express": "4.9.0",
+        "express-session": "1.8.2",
+        "method-override": "2.2.0",
+        "mongoose": "3.8.16",
+        "passport": "0.2.1",
+        "passport-instagram": "0.1.2"
+    },
+    "devDependencies": {
+        "supertest": "0.13.0",
+        "should": "4.0.4",
+        "mocha": "1.21.4",
+        "nodemon": "1.2.1"
+    }
+}

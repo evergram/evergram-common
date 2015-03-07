@@ -35,5 +35,6 @@ require('./config/express')(app, passport);
 
 module.exports = {
     app: app,
+    config: config,
     utils: utils
 };

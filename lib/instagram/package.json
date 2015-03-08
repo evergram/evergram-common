@@ -1,0 +1,12 @@
+{
+    "name": "instagram",
+    "description": "A service that interacts with the instagram API",
+    "version": "0.0.1",
+    "main": "index.js",
+    "private": true,
+    "author": "Josh Stuart",
+    "dependencies": {
+        "passport": "0.2.1",
+        "passport-instagram": "0.1.2"
+    }
+}

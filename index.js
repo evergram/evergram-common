@@ -51,7 +51,7 @@ module.exports = {
     db: mongoose,
     config: config,
     models: {
-        user: mongoose.model('User')
+        User: mongoose.model('User')
     },
     utils: utils
 };

@@ -21,6 +21,7 @@
     "start": "NODE_ENV=development ./node_modules/.bin/nodemon index.js"
   },
   "dependencies": {
+    "aws-sdk": "^2.1.16",
     "body-parser": "1.8.2",
     "compression": "1.1.0",
     "connect-mongo": "0.4.1",

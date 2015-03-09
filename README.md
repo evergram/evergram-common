@@ -1,9 +1,7 @@
-# evergram-common
+# Evergram Common
 Common code to be shared amongst node applications
 
-
-
-An example on how to find and save printable posts from an instagram user.
+### An example on how to find and save printable posts from an instagram user.
 
 ```js
 var instagram = this.instagram;
@@ -20,7 +18,7 @@ this.models.User.findOne({'username': 'joshstuartx'}, function (err, user) {
 ```
 
 
-An example on how to add, retrieve and delete a message on AWS SQS
+### An example on how to add, retrieve and delete a message on AWS SQS
 
 ```js
 aws.sqs.createMessage(aws.sqs.QUEUES.INSTAGRAM, '{"id": "test"}').then(function (result) {

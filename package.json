@@ -45,7 +45,8 @@
     "q": "^1.2.0",
     "tmp": "0.0.25",
     "winston": "^0.9.0",
-    "winston-mongodb": "^1.1.1"
+    "winston-mongodb": "^1.1.1",
+    "winston-papertrail": "^1.0.1"
   },
   "devDependencies": {
     "supertest": "0.13.0",

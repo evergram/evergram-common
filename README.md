@@ -80,5 +80,5 @@ aws.sqs.createMessage(aws.sqs.QUEUES.INSTAGRAM, '{"id": "test"}').then(function 
 ##### Import user data from json
 
 ```
-mongoimport -d evergram -c users --jsonArray ~/Downloads/Export_UserDataModel_280315.json
+mongoimport -d evergram -c users --jsonArray ~/Downloads/Evergram-Users-2015-04-02.json
 ```

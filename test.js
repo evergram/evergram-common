@@ -4,7 +4,7 @@
 
 var _ = require('lodash');
 var common = require('./lib/');
-var user = common.models.User;
+var User = common.models.User;
 var logger = common.utils.logger;
 var userManager = common.user.manager;
 var trackingManager = common.tracking.manager;
@@ -24,3 +24,17 @@ common.db.connect();
 //        });
 //    });
 //});
+
+
+userManager.find({criteria: {'instagram.username': 'emteds'}}).then(function (user) {
+    user.jobs.instagram.inQueue = true;
+
+    userManager.update(user);
+});
+
+var newUser = new User();
+newUser.firstName = 'Test';
+newUser.instagram = {
+    username: 'test'
+};
+userManager.create(newUser);

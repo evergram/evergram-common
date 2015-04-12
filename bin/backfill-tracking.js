@@ -16,14 +16,12 @@ var printManager = common.print.manager;
 //init db
 common.db.connect();
 
-var id = '5522342ea6b18aa5083472f9';
-//var options = {criteria: {_id: id}};
+//var options = {criteria: {'instagram.username': 'jacq1313'}};
 var options = {};
 
 //backfill
 userManager.findAll(options).then(function (users) {
     var deferreds = [];
-
     _.forEach(users, function (user) {
         var deferred = q.defer();
         deferreds.push(deferred.promise);
@@ -34,7 +32,6 @@ userManager.findAll(options).then(function (users) {
         }).then(function () {
             printManager.findAllByUser(user).then(function (imageSets) {
                 var printDeferreds = [];
-
                 _.forEach(imageSets, function (imageSet) {
                     //track tagged images
                     var imagesCombinedSet = trackImageSets(imageSet);
@@ -56,13 +53,7 @@ userManager.findAll(options).then(function (users) {
                         var printedDeferred = q.defer();
                         printDeferreds.push(printedDeferred.promise);
 
-                        q.when(trackPrintedImageSet(user, imageSet, key), function () {
-                            printedDeferred.resolve();
-                            logger.info('Done printed for ' + user.getUsername() + ' on ' + key);
-                        }).fail(function (err) {
-                            logger.error('Error ' + user.getUsername() + ' on ' + key, err);
-                            printedDeferred.resolve();
-                        });
+                        trackPrintedImageSet(user, imageSet)
                     }
                 });
 
@@ -81,7 +72,7 @@ function trackImageSets(imageSet) {
 
     _.forEach(imageSet.images, function (images) {
         _.forEach(images, function (image) {
-            var key = moment(image.date).hour(0).minute(0).second(0);
+            var key = moment(image.taggedOn).hour(0).minute(0).second(0);
 
             if (!combinedImages[key]) {
                 combinedImages[key] = new Array;
@@ -103,12 +94,13 @@ function trackTaggedImages(user, imageSet, images, date) {
 
     _.forEach(images, function (image) {
         total++;
-        if (image.isOwner || image.instagram.username == user.getUsername()) {
+        if (image.isOwner) {
             owned++;
         } else {
             other++;
         }
     });
+
 
     if (total > 0) {
         logger.info('Tracking ' + event + ' for ' + user.getUsername());
@@ -138,7 +130,7 @@ function trackTaggedImages(user, imageSet, images, date) {
     }
 }
 
-function trackPrintedImageSet(user, imageSet, date) {
+function trackPrintedImageSet(user, imageSet) {
     var event = 'Finalized Image Set';
 
     var total = 0;
@@ -148,7 +140,7 @@ function trackPrintedImageSet(user, imageSet, date) {
     _.forEach(imageSet.images, function (images) {
         _.forEach(images, function (image) {
             total++;
-            if (image.isOwner || image.instagram.username == user.getUsername()) {
+            if (image.isOwner) {
                 owned++;
             } else {
                 other++;
@@ -158,7 +150,7 @@ function trackPrintedImageSet(user, imageSet, date) {
 
     logger.info('Tracking ' + event + ' for ' + user.getUsername());
 
-    return trackingManager.importEvent(user, event, date, {
+    return trackingManager.importEvent(user, event, imageSet.endDate, {
         'Plan': user.billing.option,
         'Instagram Username': user.instagram.username,
         'Period': user.getPeriodFromStartDate(imageSet.startDate),

@@ -8,7 +8,6 @@ var _ = require('lodash');
 var moment = require('moment');
 var common = require('../lib/');
 var user = common.models.User;
-var logger = common.utils.logger;
 var userManager = common.user.manager;
 var trackingManager = common.tracking.manager;
 var printManager = common.print.manager;
@@ -22,7 +21,9 @@ var options = {};
 //backfill
 userManager.findAll(options).then(function (users) {
     var deferreds = [];
+    var i = 0;
     _.forEach(users, function (user) {
+        console.log(user.getUsername(), i);
         var deferred = q.defer();
         deferreds.push(deferred.promise);
 
@@ -31,19 +32,22 @@ userManager.findAll(options).then(function (users) {
             return trackingManager.importSignup(user);
         }).then(function () {
             printManager.findAllByUser(user).then(function (imageSets) {
+                console.log(user.getUsername(), imageSets.length);
                 var printDeferreds = [];
                 _.forEach(imageSets, function (imageSet) {
                     //track tagged images
                     var imagesCombinedSet = trackImageSets(imageSet);
+
+
                     _.forEach(imagesCombinedSet, function (images, key) {
                         var printDeferred = q.defer();
                         printDeferreds.push(printDeferred.promise);
 
                         q.when(trackTaggedImages(user, imageSet, images, key), function () {
                             printDeferred.resolve();
-                            logger.info('Done tagged images for ' + user.getUsername() + ' on ' + key);
+                            console.info('Done tagged images for ' + user.getUsername() + ' on ' + key);
                         }).fail(function (err) {
-                            logger.error('Error ' + user.getUsername() + ' on ' + key, err);
+                            console.error('Error ' + user.getUsername() + ' on ' + key, err);
                             printDeferred.resolve();
                         });
                     });
@@ -62,6 +66,7 @@ userManager.findAll(options).then(function (users) {
                 deferred.resolve();
             });
         });
+        i++;
     });
 
     return q.all(deferreds);
@@ -103,7 +108,7 @@ function trackTaggedImages(user, imageSet, images, date) {
 
 
     if (total > 0) {
-        logger.info('Tracking ' + event + ' for ' + user.getUsername());
+        console.info('Tracking ' + event + ' for ' + user.getUsername());
 
         return trackingManager.incrementMultiple(user, {
             'Total Images Tagged': total,
@@ -148,7 +153,7 @@ function trackPrintedImageSet(user, imageSet) {
         });
     });
 
-    logger.info('Tracking ' + event + ' for ' + user.getUsername());
+    console.info('Tracking ' + event + ' for ' + user.getUsername());
 
     return trackingManager.importEvent(user, event, imageSet.endDate, {
         'Plan': user.billing.option,

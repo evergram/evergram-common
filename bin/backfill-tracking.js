@@ -16,60 +16,61 @@ var printManager = common.print.manager;
 //init db
 common.db.connect();
 
-var options = {criteria: {'instagram.username': 'jacq1313'}};
-//var options = {};
+//var options = {criteria: {'instagram.username': 'jacq1313'}};
+var options = {};
 
 //backfill
 userManager.findAll(options).then(function (users) {
     var deferreds = [];
     var i = 0;
     _.forEach(users, function (user) {
-        logger.log(user.getUsername(), i);
-        var deferred = q.defer();
-        deferreds.push(deferred.promise);
+        if (!_.isEmpty(user.billion.option)) {
+            var deferred = q.defer();
+            deferreds.push(deferred.promise);
 
-        //create user
-        createUser(user).then(function () {
-            logger.info('Created user in Segment');
+            //create user
+            createUser(user).then(function () {
+                logger.info('Created user in Segment');
 
-            printManager.findAllByUser(user).
-            then(function (imageSets) {
-                logger.info('Found ' + imageSets.length + ' sets for ' + user.getUsername());
+                printManager.findAllByUser(user).
+                then(function (imageSets) {
+                    logger.info('Found ' + imageSets.length + ' sets for ' + user.getUsername());
 
-                var printDeferreds = [];
+                    var printDeferreds = [];
 
-                _.forEach(imageSets, function (imageSet) {
-                    //track tagged images
-                    var printDeferred = q.defer();
-                    printDeferreds.push(printDeferred.promise);
+                    _.forEach(imageSets, function (imageSet) {
+                        //track tagged images
+                        var printDeferred = q.defer();
+                        printDeferreds.push(printDeferred.promise);
 
-                    logger.info('Tracking ' + imageSet.images.instagram.length + ' images for set');
+                        logger.info('Tracking ' + imageSet.images.instagram.length + ' images for set');
 
-                    trackTaggedImages(user, imageSet).
-                    then(function () {
-                        printDeferred.resolve();
-                        logger.info('Done tagged images for ' + user.getUsername() + ' on ' + key);
-                    }).
-                    fail(function (err) {
-                        logger.error('Error ' + user.getUsername() + ' on ' + key, err);
-                        printDeferred.resolve();
+                        trackTaggedImages(user, imageSet).
+                        then(function () {
+                            printDeferred.resolve();
+                            logger.info('Done tagged images for ' + user.getUsername() + ' on ' + key);
+                        }).
+                        fail(function (err) {
+                            logger.error('Error ' + user.getUsername() + ' on ' + key, err);
+                            printDeferred.resolve();
+                        });
+
+                        if (imageSet.isPrinted) {
+                            //track print
+                            var printedDeferred = q.defer();
+                            printDeferreds.push(printedDeferred.promise);
+
+                            trackPrintedImageSet(user, imageSet)
+                        }
                     });
 
-                    if (imageSet.isPrinted) {
-                        //track print
-                        var printedDeferred = q.defer();
-                        printDeferreds.push(printedDeferred.promise);
-
-                        trackPrintedImageSet(user, imageSet)
-                    }
+                    return q.all(printDeferreds);
+                }).
+                fail(function (err) {
+                    logger.error(err);
                 });
-
-                return q.all(printDeferreds);
-            }).
-            fail(function (err) {
-                logger.error(err);
             });
-        });
+        }
         i++;
     });
 
@@ -98,7 +99,7 @@ function trackTaggedImages(user, imageSet) {
             type: image.isOwner ? 'own' : 'friends',
             isHistorical: moment(image.createdOn).isBefore(user.createdOn),
             link: image.metadata.link,
-            image: image.raw,
+            image: image.src.raw,
             period: user.getPeriodFromStartDate(imageSet.startDate),
             createdOn: moment(image.createdOn).toDate(),
             taggedOn: moment(image.taggedOn).toDate()

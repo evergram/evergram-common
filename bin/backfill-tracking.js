@@ -55,7 +55,7 @@ userManager.findAll(options).then(function (users) {
                             printDeferred.resolve();
                         });
 
-                        if (imageSet.isPrinted) {
+                        if (imageSet.isPrinted && imageSet.images.instagram.length > 0) {
                             //track print
                             var printedDeferred = q.defer();
                             printDeferreds.push(printedDeferred.promise);

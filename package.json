@@ -22,6 +22,7 @@
     "test": "NODE_ENV=development ./node_modules/.bin/nodemon test.js"
   },
   "dependencies": {
+    "analytics-node": "^1.2.2",
     "archiver": "^0.14.3",
     "aws-sdk": "^2.1.16",
     "body-parser": "1.8.2",
@@ -36,13 +37,12 @@
     "lodash": "^3.5.0",
     "mandrill-api": "^1.0.41",
     "method-override": "2.2.0",
-    "mixpanel": "^0.1.1",
     "moment": "^2.9.0",
     "mongoose": "3.8.16",
     "passport": "0.2.1",
     "passport-instagram": "0.1.2",
-    "stripe": "3.3.2",
     "q": "^1.2.0",
+    "stripe": "3.3.2",
     "tmp": "0.0.25",
     "winston": "^0.9.0",
     "winston-mongodb": "^1.1.1",

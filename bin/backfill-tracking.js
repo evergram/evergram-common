@@ -24,7 +24,7 @@ userManager.findAll(options).then(function (users) {
     var deferreds = [];
     var i = 0;
     _.forEach(users, function (user) {
-        if (!_.isEmpty(user.billion.option)) {
+        if (!_.isEmpty(user.billing.option)) {
             var deferred = q.defer();
             deferreds.push(deferred.promise);
 
@@ -74,7 +74,9 @@ userManager.findAll(options).then(function (users) {
         i++;
     });
 
-    return q.all(deferreds);
+    return q.all(deferreds).then(function () {
+        logger.info('WE ARE DONE!');
+    })
 });
 
 function createUser(user) {

@@ -17,72 +17,73 @@ var printManager = common.print.manager;
 common.db.connect();
 
 //var options = {criteria: {'instagram.username': 'jacq1313'}};
-var options = {};
+var options = {criteria: {active: true}};
 
 //backfill
-userManager.findAll(options).then(function (users) {
+userManager.findAll(options).then(function(users) {
     var deferreds = [];
     var i = 0;
-    _.forEach(users, function (user) {
+    _.forEach(users, function(user) {
         if (!_.isEmpty(user.billing.option)) {
             var deferred = q.defer();
             deferreds.push(deferred.promise);
 
             //create user
-            createUser(user).then(function () {
+            createUser(user).then(function() {
                 logger.info('Created user in Segment');
 
                 printManager.findAllByUser(user).
-                then(function (imageSets) {
-                    logger.info('Found ' + imageSets.length + ' sets for ' + user.getUsername());
+                    then(function(imageSets) {
+                        logger.info('Found ' + imageSets.length + ' sets for ' + user.getUsername());
 
-                    var printDeferreds = [];
+                        var printDeferreds = [];
 
-                    _.forEach(imageSets, function (imageSet) {
-                        //track tagged images
-                        var printDeferred = q.defer();
-                        printDeferreds.push(printDeferred.promise);
+                        _.forEach(imageSets, function(imageSet) {
+                            //track tagged images
+                            var printDeferred = q.defer();
+                            printDeferreds.push(printDeferred.promise);
 
-                        logger.info('Tracking ' + imageSet.images.instagram.length + ' images for set');
+                            logger.info('Tracking ' + imageSet.images.instagram.length + ' images for set');
 
-                        trackTaggedImages(user, imageSet).
-                        then(function () {
-                            printDeferred.resolve();
-                            logger.info('Done tagged images for ' + user.getUsername() + ' on ' + key);
-                        }).
-                        fail(function (err) {
-                            logger.error('Error ' + user.getUsername() + ' on ' + key, err);
-                            printDeferred.resolve();
+                            trackTaggedImages(user, imageSet).
+                                then(function() {
+                                    printDeferred.resolve();
+                                    logger.info('Done tagged images for ' + user.getUsername() + ' on ' + key);
+                                }).
+                                fail(function(err) {
+                                    logger.error('Error ' + user.getUsername() + ' on ' + key, err);
+                                    printDeferred.resolve();
+                                });
+
+                            if (imageSet.isPrinted && imageSet.images.instagram.length > 0) {
+                                //track print
+                                var printedDeferred = q.defer();
+                                printDeferreds.push(printedDeferred.promise);
+
+                                trackPrintedImageSet(user, imageSet);
+                            }
                         });
 
-                        if (imageSet.isPrinted && imageSet.images.instagram.length > 0) {
-                            //track print
-                            var printedDeferred = q.defer();
-                            printDeferreds.push(printedDeferred.promise);
-
-                            trackPrintedImageSet(user, imageSet)
-                        }
+                        return q.all(printDeferreds);
+                    }).
+                    fail(function(err) {
+                        logger.error(err);
                     });
-
-                    return q.all(printDeferreds);
-                }).
-                fail(function (err) {
-                    logger.error(err);
-                });
             });
         }
+
         i++;
     });
 
-    return q.all(deferreds).then(function () {
+    return q.all(deferreds).then(function() {
         logger.info('WE ARE DONE!');
-    })
+    });
 });
 
 function createUser(user) {
-    return trackingManager.createUser(user).then(function () {
+    return trackingManager.createUser(user).then(function() {
         logger.info('Registering Signed Up for ' + user.getUsername());
-        return trackingManager.trackEvent(user, 'Signed Up', {
+        return trackingManager.trackEvent(user, 'Signed up', {
             plan: user.billing.option
         }, moment(user.createdOn).toDate());
     });
@@ -94,7 +95,7 @@ function trackTaggedImages(user, imageSet) {
 
     logger.info('Tracking ' + event + ' for ' + user.getUsername());
 
-    _.forEach(imageSet.images.instagram, function (image) {
+    _.forEach(imageSet.images.instagram, function(image) {
         var deferred = trackingManager.trackEvent(user, event, {
             service: 'instagram',
             owner: image.owner,
@@ -120,8 +121,8 @@ function trackPrintedImageSet(user, imageSet) {
     var owned = 0;
     var other = 0;
 
-    _.forEach(imageSet.images, function (images) {
-        _.forEach(images, function (image) {
+    _.forEach(imageSet.images, function(images) {
+        _.forEach(images, function(image) {
             total++;
             if (image.isOwner) {
                 owned++;

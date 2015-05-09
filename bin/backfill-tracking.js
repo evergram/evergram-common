@@ -7,7 +7,6 @@ var q = require('q');
 var _ = require('lodash');
 var moment = require('moment');
 var common = require('../lib/');
-var user = common.models.User;
 var logger = common.utils.logger;
 var userManager = common.user.manager;
 var trackingManager = common.tracking.manager;
@@ -16,22 +15,28 @@ var printManager = common.print.manager;
 //init db
 common.db.connect();
 
-//var options = {criteria: {'instagram.username': 'jacq1313'}};
-var options = {criteria: {active: true}};
+//var options = {criteria: {'instagram.username': 'kirstyristevski'}};
+var options = {
+    criteria: {
+        active: true
+    }
+};
 
 //backfill
 userManager.findAll(options).then(function(users) {
     var deferreds = [];
     var i = 0;
+    var total = users.length;
+
     _.forEach(users, function(user) {
-        if (!_.isEmpty(user.billing.option)) {
-            var deferred = q.defer();
-            deferreds.push(deferred.promise);
+        logger.info('------------------------ STARTING USER ' + i + ' of ' + total);
+        var deferred = q.defer();
+        deferreds.push(deferred.promise);
 
-            //create user
-            createUser(user).then(function() {
+        //create user
+        createUser(user).
+            then(function() {
                 logger.info('Created user in Segment');
-
                 printManager.findAllByUser(user).
                     then(function(imageSets) {
                         logger.info('Found ' + imageSets.length + ' sets for ' + user.getUsername());
@@ -47,11 +52,11 @@ userManager.findAll(options).then(function(users) {
 
                             trackTaggedImages(user, imageSet).
                                 then(function() {
+                                    logger.info('Done tagged images for ' + user.getUsername());
                                     printDeferred.resolve();
-                                    logger.info('Done tagged images for ' + user.getUsername() + ' on ' + key);
                                 }).
                                 fail(function(err) {
-                                    logger.error('Error ' + user.getUsername() + ' on ' + key, err);
+                                    logger.error('Error ' + user.getUsername(), err);
                                     printDeferred.resolve();
                                 });
 
@@ -68,9 +73,13 @@ userManager.findAll(options).then(function(users) {
                     }).
                     fail(function(err) {
                         logger.error(err);
-                    });
+                    }).
+                    done();
+            }).
+            done(function() {
+                logger.info('------------------------ COMPLETED USER ' + i + ' of ' + total);
+                deferred.resolve();
             });
-        }
 
         i++;
     });
@@ -81,12 +90,34 @@ userManager.findAll(options).then(function(users) {
 });
 
 function createUser(user) {
-    return trackingManager.createUser(user).then(function() {
-        logger.info('Registering Signed Up for ' + user.getUsername());
-        return trackingManager.trackEvent(user, 'Signed up', {
-            plan: user.billing.option
-        }, moment(user.createdOn).toDate());
-    });
+    return trackingManager.createUser(user).
+        then(function() {
+            if (user.signupComplete === true) {
+                logger.info('Connecting a service for ' + user.getUsername());
+
+                return trackingManager.trackEvent(user, 'Connected a service', {
+                    service: 'Instagram',
+                    instagramUsername: user.instagram.username
+                }, moment(user.createdOn).toDate());
+            } else {
+                return q.fcall(function() {
+                    return true;
+                });
+            }
+        }).
+        then(function() {
+            if (user.signupComplete === true) {
+                logger.info('Registering Signed Up for ' + user.getUsername());
+
+                return trackingManager.trackEvent(user, 'Signed up', {
+                    plan: user.billing.option
+                }, moment(user.createdOn).toDate());
+            } else {
+                return q.fcall(function() {
+                    return true;
+                });
+            }
+        });
 }
 
 function trackTaggedImages(user, imageSet) {

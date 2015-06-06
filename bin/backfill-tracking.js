@@ -15,34 +15,34 @@ var printManager = common.print.manager;
 //init db
 common.db.connect();
 
-//var options = {criteria: {'instagram.username': 'kirstyristevski'}};
+var options = {criteria: {'instagram.username': 'andyrsalon'}};
 //var options = {
 //    criteria: {
 //        active: true
 //    }
 //};
-var options = {
-    criteria: {
-        _id: {
-            $in: [
-                '554c36c5a587677837e2a0d0',
-                '555115691bf668e7a97f5cc1',
-                '554c95d6a587677837e2a0d3',
-                '555115681bf668e7a97f5cbe',
-                '5530f4dc08df2c270de6be52',
-                '554ccf95a587677837e2a0d4',
-                '555e6a1da587677837e2a0d9',
-                '554c5b91a587677837e2a0d1',
-                '55504b5aa587677837e2a0d5',
-                '555115681bf668e7a97f5cbd',
-                '5553257c1bf668e7a97f5cc2',
-                '5553257d1bf668e7a97f5cc3',
-                '555115681bf668e7a97f5cc0',
-                '555115681bf668e7a97f5cbf'
-            ]
-        }
-    }
-};
+//var options = {
+//    criteria: {
+//        _id: {
+//            $in: [
+//                '554c36c5a587677837e2a0d0',
+//                '555115691bf668e7a97f5cc1',
+//                '554c95d6a587677837e2a0d3',
+//                '555115681bf668e7a97f5cbe',
+//                '5530f4dc08df2c270de6be52',
+//                '554ccf95a587677837e2a0d4',
+//                '555e6a1da587677837e2a0d9',
+//                '554c5b91a587677837e2a0d1',
+//                '55504b5aa587677837e2a0d5',
+//                '555115681bf668e7a97f5cbd',
+//                '5553257c1bf668e7a97f5cc2',
+//                '5553257d1bf668e7a97f5cc3',
+//                '555115681bf668e7a97f5cc0',
+//                '555115681bf668e7a97f5cbf'
+//            ]
+//        }
+//    }
+//};
 
 //backfill
 userManager.findAll(options).then(function(users) {

@@ -31,8 +31,7 @@ userManager.findAll(options).then(function(users) {
         var signupDate = moment(user.signupCompletedOn);
 
         if (hasUtcDate(signupDate)) {
-            logger.info('------------------------ FOUND USER ' + user.getUsername() + ' ----- WITH ' +
-                signupDate.format());
+            logger.info(user.getUsername());
 
             var deferred = q.defer();
             deferreds.push(deferred.promise);
@@ -40,24 +39,15 @@ userManager.findAll(options).then(function(users) {
             var normalizedDate = normalizeDate(signupDate);
             user.createdOn = normalizedDate;
             user.signupCompletedOn = normalizedDate;
-            logger.info('------------------------ HERE USER ' + user.getUsername() + ' ----- WITH ' +
-                user.signupCompletedOn);
 
             user.save();
             printManager.findAllByUser(user).
                 then(function(imageSets) {
-                    logger.info('Found ' + imageSets.length + ' sets for ' + user.getUsername());
-
                     var printDeferreds = [];
 
                     _.forEach(imageSets, function(imageSet) {
                         var periodStartDate = user.getPeriodStartDate(imageSet.period);
                         var periodEndDate = user.getPeriodEndDate(imageSet.period);
-
-                        logger.info('------------ SAVE IMAGE SET START ' + user.getUsername() + ' ----- ' +
-                            periodStartDate + ' TO ' + imageSet.startDate);
-                        logger.info('------------ SAVE IMAGE SET END ' + user.getUsername() + ' ----- ' +
-                            periodEndDate + ' TO ' + imageSet.endDate);
 
                         imageSet.startDate = periodStartDate;
                         imageSet.endDate = periodEndDate;
@@ -86,7 +76,6 @@ userManager.findAll(options).then(function(users) {
  * @returns {*}
  */
 function normalizeDate(date) {
-    //return moment(date).hour(14).subtract(1, 'days').tz('Australia/Melbourne');
     return moment(date).tz('Australia/Melbourne').startOf('day').format();
 }
 

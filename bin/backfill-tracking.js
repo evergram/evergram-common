@@ -15,12 +15,13 @@ var printManager = common.print.manager;
 //init db
 common.db.connect();
 
-var options = {criteria: {'instagram.username': 'andyrsalon'}};
-//var options = {
-//    criteria: {
-//        active: true
-//    }
-//};
+//var options = {criteria: {'instagram.username': 'andyrsalon'}};
+var options = {
+    criteria: {
+        active: true
+    }
+};
+
 //var options = {
 //    criteria: {
 //        _id: {
@@ -59,44 +60,49 @@ userManager.findAll(options).then(function(users) {
         createUser(user).
             then(function() {
                 logger.info('Created user in Segment');
-                printManager.findAllByUser(user).
-                    then(function(imageSets) {
-                        logger.info('Found ' + imageSets.length + ' sets for ' + user.getUsername());
 
-                        var printDeferreds = [];
+                if (user.signupComplete === true) {
+                    printManager.findAllByUser(user).
+                        then(function(imageSets) {
+                            logger.info('Found ' + imageSets.length + ' sets for ' + user.getUsername());
 
-                        _.forEach(imageSets, function(imageSet) {
-                            //track tagged images
-                            var printDeferred = q.defer();
-                            printDeferreds.push(printDeferred.promise);
+                            var printDeferreds = [];
 
-                            logger.info('Tracking ' + imageSet.images.instagram.length + ' images for set');
+                            _.forEach(imageSets, function(imageSet) {
+                                //track tagged images
+                                var printDeferred = q.defer();
+                                printDeferreds.push(printDeferred.promise);
 
-                            trackTaggedImages(user, imageSet).
-                                then(function() {
-                                    logger.info('Done tagged images for ' + user.getUsername());
-                                    printDeferred.resolve();
-                                }).
-                                fail(function(err) {
-                                    logger.error('Error ' + user.getUsername(), err);
-                                    printDeferred.resolve();
-                                });
+                                logger.info('Tracking ' + imageSet.images.instagram.length + ' images for set');
 
-                            if (imageSet.isPrinted && imageSet.images.instagram.length > 0) {
-                                //track print
-                                var printedDeferred = q.defer();
-                                printDeferreds.push(printedDeferred.promise);
+                                trackTaggedImages(user, imageSet).
+                                    then(function() {
+                                        logger.info('Done tagged images for ' + user.getUsername());
+                                        printDeferred.resolve();
+                                    }).
+                                    fail(function(err) {
+                                        logger.error('Error ' + user.getUsername(), err);
+                                        printDeferred.resolve();
+                                    });
 
-                                trackPrintedImageSet(user, imageSet);
-                            }
-                        });
+                                if (imageSet.isPrinted && imageSet.images.instagram.length > 0) {
+                                    //track print
+                                    var printedDeferred = q.defer();
+                                    printDeferreds.push(printedDeferred.promise);
 
-                        return q.all(printDeferreds);
-                    }).
-                    fail(function(err) {
-                        logger.error(err);
-                    }).
-                    done();
+                                    trackPrintedImageSet(user, imageSet);
+                                }
+                            });
+
+                            return q.all(printDeferreds);
+                        }).
+                        fail(function(err) {
+                            logger.error(err);
+                        }).
+                        done();
+                } else {
+                    logger.info('User has not completed signup');
+                }
             }).
             done(function() {
                 logger.info('------------------------ COMPLETED USER ' + i + ' of ' + total);
@@ -185,16 +191,20 @@ function trackPrintedImageSet(user, imageSet) {
         });
     });
 
-    logger.info('Tracking ' + event + ' for ' + user.getUsername());
+    if (total > 0) {
+        logger.info('Tracking ' + event + ' for ' + user.getUsername());
 
-    return trackingManager.trackEvent(user, event, {
-        imageSetId: imageSet._id.toString(),
-        photoCount: total,
-        ownPhotoCount: owned,
-        friendsPhotoCount: other,
-        period: imageSet.period,
-        startDate: moment(imageSet.startDate).toDate(),
-        endDate: moment(imageSet.endDate).toDate(),
-        shippedOn: moment(imageSet.endDate).toDate()
-    }, moment(imageSet.endDate).toDate());
+        return trackingManager.trackEvent(user, event, {
+            imageSetId: imageSet._id.toString(),
+            photoCount: total,
+            ownPhotoCount: owned,
+            friendsPhotoCount: other,
+            period: imageSet.period,
+            startDate: moment(imageSet.startDate).toDate(),
+            endDate: moment(imageSet.endDate).toDate(),
+            shippedOn: moment(imageSet.endDate).toDate()
+        }, moment(imageSet.endDate).toDate());
+    } else {
+        logger.info('No images to track for ' + user.getUsername());
+    }
 }

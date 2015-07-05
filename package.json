@@ -2,41 +2,29 @@
   "name": "evergram-common",
   "description": "Evergram's common functionality",
   "keywords": [
-    "express",
-    "mongoose",
-    "mongodb",
-    "passport"
+    "evergram"
   ],
   "version": "0.0.1",
   "private": true,
-  "author": "Josh Stuart",
+  "author": "Josh Stuart <joshstuartx@gmail.com>",
   "repository": {
     "type": "git",
     "url": "https://github.com/evergram/evergram-common.git"
   },
-  "engines": {
-    "node": "0.12.00"
-  },
   "scripts": {
-    "start": "NODE_ENV=development ./node_modules/.bin/nodemon index.js",
-    "test": "NODE_ENV=development ./node_modules/.bin/nodemon test.js"
+    "lint": "./node_modules/.bin/jshint ./lib",
+    "checkStyle": "./node_modules/.bin/jscs ./lib",
+    "pretest": "npm run-script lint && npm run-script checkStyle",
+    "test": "NODE_ENV=test ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --recursive -R spec -r should"
   },
   "dependencies": {
     "analytics-node": "^1.2.2",
     "archiver": "^0.14.3",
     "aws-sdk": "^2.1.16",
-    "body-parser": "1.8.2",
-    "compression": "1.1.0",
     "connect-mongo": "0.4.1",
-    "cookie-parser": "1.3.3",
-    "cookie-session": "1.0.2",
-    "express": "4.9.0",
-    "express-session": "1.8.2",
-    "imagemagick": "^0.1.3",
     "instagram-node": "^0.5.6",
     "lodash": "^3.5.0",
     "mandrill-api": "^1.0.41",
-    "method-override": "2.2.0",
     "moment": "^2.9.0",
     "moment-timezone": "^0.3.1",
     "mongoose": "3.8.16",
@@ -48,9 +36,12 @@
     "winston-papertrail": "^1.0.1"
   },
   "devDependencies": {
-    "supertest": "0.13.0",
-    "should": "4.0.4",
-    "mocha": "1.21.4",
-    "nodemon": "1.2.1"
+    "istanbul": "^0.3.13",
+    "jscs": "^1.12.0",
+    "jshint": "^2.7.0",
+    "mocha": "^2.2.4",
+    "should": "^6.0.1",
+    "sinon": "^1.14.1",
+    "supertest": "^0.15.0"
   }
 }

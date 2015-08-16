@@ -3,7 +3,6 @@
  */
 process.env.TZ = 'UTC';
 
-var q = require('q');
 var _ = require('lodash');
 var moment = require('moment-timezone');
 var common = require('../../lib/');
@@ -14,69 +13,50 @@ var printManager = common.print.manager;
 //init db
 common.db.connect();
 
-//var options = {criteria: {'instagram.username': 'kirstyristevski'}};
 var options = {
     criteria: {
-        active: true
+        signupComplete: true
     }
 };
 
-//backfill
-userManager.findAll(options).then(function(users) {
-    var deferreds = [];
-    var i = 0;
-    var total = users.length;
+//backfill users
+userManager.findAll(options).
+    then(function(users) {
+        _.forEach(users, function(user) {
+            if (!hasUtcDate(user.signupCompletedOn)) {
+                var normalizedDate = normalizeDate(user.signupCompletedOn);
+                user.signupCompletedOn = normalizedDate;
 
-    _.forEach(users, function(user) {
-        var signupDate = moment(user.signupCompletedOn);
-
-        if (hasUtcDate(signupDate)) {
-            logger.info(user.getUsername());
-
-            var deferred = q.defer();
-            deferreds.push(deferred.promise);
-
-            var normalizedDate = normalizeDate(signupDate);
-            user.createdOn = normalizedDate;
-            user.signupCompletedOn = normalizedDate;
-
-            user.save();
-            printManager.findAllByUser(user).
-                then(function(imageSets) {
-                    var printDeferreds = [];
-
-                    _.forEach(imageSets, function(imageSet) {
-                        var periodStartDate = user.getPeriodStartDate(imageSet.period);
-                        var periodEndDate = user.getPeriodEndDate(imageSet.period);
-
-                        imageSet.startDate = periodStartDate;
-                        imageSet.endDate = periodEndDate;
-
-                        imageSet.save();
-                    });
-
-                    return q.all(printDeferreds);
-                }).
-                fail(function(err) {
-                    logger.error(err);
-                }).
-                done();
-        }
-
-        i++;
+                console.log(user.instagram.username, normalizedDate.format());
+                user.save();
+            }
+        });
     });
 
-    return q.all(deferreds).then(function() {
-        logger.info('WE ARE DONE!');
+// image sets
+printManager.findAll().
+    then(function(imageSets) {
+        _.forEach(imageSets, function(imageSet) {
+            if (!hasUtcDate(imageSet.startDate)) {
+                imageSet.startDate = normalizeDate(imageSet.startDate);
+                logger.info(imageSet.user.instagram.username);
+                logger.info(imageSet.startDate);
+            }
+
+            if (!hasUtcDate(imageSet.endDate)) {
+                imageSet.endDate = normalizeDate(imageSet.endDate);
+            }
+
+            imageSet.save();
+        });
     });
-});
 
 /**
  * @param date
  * @returns {*}
  */
 function normalizeDate(date) {
-    return moment(date).tz('Australia/Melbourne').startOf('day').format();
+    return moment(date).utc().hour(14).minute(0).second(0);
 }
 
 /**
@@ -84,5 +64,6 @@ function normalizeDate(date) {
  * @returns {boolean}
  */
 function hasUtcDate(date) {
-    return date.hours() === 0 && date.minutes() === 0;
+    var momentDate = moment(date).utc();
+    return momentDate.hours() === 14 && momentDate.minutes() === 0 && momentDate.second() === 0;
 }

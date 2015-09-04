@@ -137,9 +137,7 @@ function createUser(user) {
             if (user.signupComplete === true) {
                 logger.info('Registering Signed Up for ' + user.getUsername());
 
-                return trackingManager.trackEvent(user, 'Signed up', {
-                    plan: user.billing.option
-                }, moment(user.signupCompletedOn).toDate());
+                return trackingManager.trackEvent(user, 'Signed up', {}, moment(user.signupCompletedOn).toDate());
             } else {
                 return q.fcall(function() {
                     return true;
@@ -162,6 +160,8 @@ function trackTaggedImages(user, imageSet) {
             isHistorical: moment(image.createdOn).isBefore(user.signupCompletedOn),
             link: image.metadata.link,
             image: image.src.raw,
+            tag: image.tag,
+            action: image.action,
             period: user.getPeriodFromStartDate(imageSet.startDate),
             createdOn: moment(image.createdOn).toDate(),
             taggedOn: moment(image.taggedOn).toDate()

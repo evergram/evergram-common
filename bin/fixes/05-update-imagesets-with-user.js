@@ -12,24 +12,19 @@ var printManager = common.print.manager;
 //init db
 common.db.connect();
 
-var options = {
-    criteria: {
-        signupComplete: false,
-        signupCompletedOn: {
-            $exists: false
-        }
-    }
-};
-
 //backfill users
-userManager.findAll(options).
+userManager.findAll().
 then(function(users) {
     _.forEach(users, function(user) {
+        logger.info(user.instagram.username);
         printManager.findAllByUser(user).
         then(function(imageSets) {
             _.forEach(imageSets, function(imageSet) {
-                logger.info(imageSet.user.instagram.username);
-                imageSet.remove();
+                imageSet.user.active = user.active;
+                imageSet.user.signupComplete = user.signupComplete;
+                imageSet.createdOn = imageSet.startDate;
+                imageSet.updatedOn = imageSet.isPrinted ? imageSet.endDate : imageSet.startDate;
+                imageSet.save();
             });
         });
     });

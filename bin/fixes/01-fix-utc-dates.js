@@ -21,35 +21,35 @@ var options = {
 
 //backfill users
 userManager.findAll(options).
-    then(function(users) {
-        _.forEach(users, function(user) {
-            if (!hasUtcDate(user.signupCompletedOn)) {
-                var normalizedDate = normalizeDate(user.signupCompletedOn);
-                user.signupCompletedOn = normalizedDate;
+then(function(users) {
+    _.forEach(users, function(user) {
+        if (!hasUtcDate(user.signupCompletedOn)) {
+            var normalizedDate = normalizeDate(user.signupCompletedOn);
+            user.signupCompletedOn = normalizedDate;
 
-                console.log(user.instagram.username, normalizedDate.format());
-                user.save();
-            }
-        });
+            console.log(user.instagram.username, normalizedDate.format());
+            user.save();
+        }
     });
+});
 
 // image sets
 printManager.findAll().
-    then(function(imageSets) {
-        _.forEach(imageSets, function(imageSet) {
-            if (!hasUtcDate(imageSet.startDate)) {
-                imageSet.startDate = normalizeDate(imageSet.startDate);
-                logger.info(imageSet.user.instagram.username);
-                logger.info(imageSet.startDate);
-            }
+then(function(imageSets) {
+    _.forEach(imageSets, function(imageSet) {
+        if (!hasUtcDate(imageSet.startDate)) {
+            imageSet.startDate = normalizeDate(imageSet.startDate);
+            logger.info(imageSet.user.instagram.username);
+            logger.info(imageSet.startDate);
+        }
 
-            if (!hasUtcDate(imageSet.endDate)) {
-                imageSet.endDate = normalizeDate(imageSet.endDate);
-            }
+        if (!hasUtcDate(imageSet.endDate)) {
+            imageSet.endDate = normalizeDate(imageSet.endDate);
+        }
 
-            imageSet.save();
-        });
+        imageSet.save();
     });
+});
 
 /**
  * @param date

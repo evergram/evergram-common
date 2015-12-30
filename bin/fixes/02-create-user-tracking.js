@@ -43,13 +43,13 @@ userManager.findAll(options).then(function(users) {
 
         //create user
         createUser(user).
-            then(function() {
-                logger.info('Created user in Segment');
-            }).
-            done(function() {
-                logger.info('------------------------ COMPLETED USER ' + i + ' of ' + total);
-                deferred.resolve();
-            });
+        then(function() {
+            logger.info('Created user in Segment');
+        }).
+        done(function() {
+            logger.info('------------------------ COMPLETED USER ' + i + ' of ' + total);
+            deferred.resolve();
+        });
 
         i++;
     });

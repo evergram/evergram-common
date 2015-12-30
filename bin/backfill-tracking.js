@@ -58,56 +58,56 @@ userManager.findAll(options).then(function(users) {
 
         //create user
         createUser(user).
-            then(function() {
-                logger.info('Created user in Segment');
+        then(function() {
+            logger.info('Created user in Segment');
 
-                if (user.signupComplete === true) {
-                    printManager.findAllByUser(user).
-                        then(function(imageSets) {
-                            logger.info('Found ' + imageSets.length + ' sets for ' + user.getUsername());
+            if (user.signupComplete === true) {
+                printManager.findAllByUser(user).
+                then(function(imageSets) {
+                    logger.info('Found ' + imageSets.length + ' sets for ' + user.getUsername());
 
-                            var printDeferreds = [];
+                    var printDeferreds = [];
 
-                            _.forEach(imageSets, function(imageSet) {
-                                //track tagged images
-                                var printDeferred = q.defer();
-                                printDeferreds.push(printDeferred.promise);
+                    _.forEach(imageSets, function(imageSet) {
+                        //track tagged images
+                        var printDeferred = q.defer();
+                        printDeferreds.push(printDeferred.promise);
 
-                                logger.info('Tracking ' + imageSet.images.instagram.length + ' images for set');
+                        logger.info('Tracking ' + imageSet.images.instagram.length + ' images for set');
 
-                                trackTaggedImages(user, imageSet).
-                                    then(function() {
-                                        logger.info('Done tagged images for ' + user.getUsername());
-                                        printDeferred.resolve();
-                                    }).
-                                    fail(function(err) {
-                                        logger.error('Error ' + user.getUsername(), err);
-                                        printDeferred.resolve();
-                                    });
-
-                                if (imageSet.isPrinted && imageSet.images.instagram.length > 0) {
-                                    //track print
-                                    var printedDeferred = q.defer();
-                                    printDeferreds.push(printedDeferred.promise);
-
-                                    trackPrintedImageSet(user, imageSet);
-                                }
-                            });
-
-                            return q.all(printDeferreds);
+                        trackTaggedImages(user, imageSet).
+                        then(function() {
+                            logger.info('Done tagged images for ' + user.getUsername());
+                            printDeferred.resolve();
                         }).
                         fail(function(err) {
-                            logger.error(err);
-                        }).
-                        done();
-                } else {
-                    logger.info('User has not completed signup');
-                }
-            }).
-            done(function() {
-                logger.info('------------------------ COMPLETED USER ' + i + ' of ' + total);
-                deferred.resolve();
-            });
+                            logger.error('Error ' + user.getUsername(), err);
+                            printDeferred.resolve();
+                        });
+
+                        if (imageSet.isPrinted && imageSet.images.instagram.length > 0) {
+                            //track print
+                            var printedDeferred = q.defer();
+                            printDeferreds.push(printedDeferred.promise);
+
+                            trackPrintedImageSet(user, imageSet);
+                        }
+                    });
+
+                    return q.all(printDeferreds);
+                }).
+                fail(function(err) {
+                    logger.error(err);
+                }).
+                done();
+            } else {
+                logger.info('User has not completed signup');
+            }
+        }).
+        done(function() {
+            logger.info('------------------------ COMPLETED USER ' + i + ' of ' + total);
+            deferred.resolve();
+        });
 
         i++;
     });
@@ -119,31 +119,31 @@ userManager.findAll(options).then(function(users) {
 
 function createUser(user) {
     return trackingManager.createUser(user).
-        then(function() {
-            if (!_.isEmpty(user.instagram.username)) {
-                logger.info('Connecting a service for ' + user.getUsername());
+    then(function() {
+        if (!_.isEmpty(user.instagram.username)) {
+            logger.info('Connecting a service for ' + user.getUsername());
 
-                return trackingManager.trackEvent(user, 'Connected a service', {
-                    service: 'Instagram',
-                    instagramUsername: user.instagram.username
-                }, moment(user.createdOn).toDate());
-            } else {
-                return q.fcall(function() {
-                    return true;
-                });
-            }
-        }).
-        then(function() {
-            if (user.signupComplete === true) {
-                logger.info('Registering Signed Up for ' + user.getUsername());
+            return trackingManager.trackEvent(user, 'Connected a service', {
+                service: 'Instagram',
+                instagramUsername: user.instagram.username
+            }, moment(user.createdOn).toDate());
+        } else {
+            return q.fcall(function() {
+                return true;
+            });
+        }
+    }).
+    then(function() {
+        if (user.signupComplete === true) {
+            logger.info('Registering Signed Up for ' + user.getUsername());
 
-                return trackingManager.trackEvent(user, 'Signed up', {}, moment(user.signupCompletedOn).toDate());
-            } else {
-                return q.fcall(function() {
-                    return true;
-                });
-            }
-        });
+            return trackingManager.trackEvent(user, 'Signed up', {}, moment(user.signupCompletedOn).toDate());
+        } else {
+            return q.fcall(function() {
+                return true;
+            });
+        }
+    });
 }
 
 function trackTaggedImages(user, imageSet) {

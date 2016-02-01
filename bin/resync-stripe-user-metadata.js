@@ -8,13 +8,12 @@ var _ = require('lodash');
 var common = require('../lib/');
 var logger = common.utils.logger;
 var userManager = common.user.manager;
-var config = common.config.stripe;
 var stripe = require('stripe');
 
 //init db
 common.db.connect();
 
-var stripe = stripe("sk_test_KN8z6UJtLbBWITp7FZUGiWKI");
+var stripeInstance = stripe("sk_test_KN8z6UJtLbBWITp7FZUGiWKI");
 
 var options = {
     criteria: {
@@ -31,13 +30,14 @@ var options = {
     }
 };
 
-
-//backfill
-userManager.findAll(options).
+common.db.connect().
+then(function() {
+    return userManager.findAll(options);
+}).
 then(function(users) {
     var promises = [];
     var i = 1;
-    var done_i = 1;
+    var numCompleted = 1;
     var total = users.length;
 
     _.forEach(users, function(user) {
@@ -57,12 +57,14 @@ then(function(users) {
         }).
         then(function() {
             logger.info('Updated user in Stripe');
-            logger.info('------------------------ COMPLETED USER ' + user.instagram.username + ', ' + done_i + ' of ' + total);
-            done_i++;
+            logger.info(
+                '------------------------ COMPLETED USER ' + user.instagram.username + ', ' + numCompleted + ' of ' + total);
+            numCompleted++;
             promise.resolve();
         }).
         fail(function(err) {
-            logger.info('------------------------ FAILED USER ' + user.instagram.username + ', ' + done_i + ' of ' + total);
+            logger.info(
+                '------------------------ FAILED USER ' + user.instagram.username + ', ' + numCompleted + ' of ' + total);
             logger.error(err);
             promise.resolve();
         });
@@ -82,7 +84,6 @@ then(function() {
     }, 10000);
 });
 
-
 /**
  * Updates an existing customer in stripe.
  *
@@ -92,7 +93,5 @@ then(function() {
  */
 function updateCustomer(id, data) {
     logger.info('updateCustomer + ' + id + ', data=' + data);
-    return q.ninvoke(stripe.customers, 'update', id, data);
-};
-
-
+    return q.ninvoke(stripeInstance.customers, 'update', id, data);
+}

@@ -6,7 +6,6 @@ var sinon = require('sinon');
 var q = require('q');
 var moment = require('moment');
 var db = require('../../lib/db');
-var userManager = require('../../lib/user/manager');
 var instagramUser = require('../../lib/mapper/instagramUser');
 
 describe('Map Instagram User profile to Pixy User model', function() {
@@ -147,5 +146,4 @@ describe('Map Instagram User profile to Pixy User model', function() {
 
         done();
     });
-
 });

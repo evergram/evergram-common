@@ -21,7 +21,7 @@ then(function() {
      * Should have 39 effected records
      */
     return userManager.findAll({
-        criteria: {"address.postcode": {$type: 1}}
+        criteria: {"address.postcode": {$type: 16}}
     });
 }).
 then(function(users) {
@@ -54,7 +54,7 @@ then(function() {
      * Should have 32 effected records
      */
     return userManager.findAll({
-        criteria: {"instagram.id": {$type: 1}}
+        criteria: {"instagram.id": {$type: 16}}
     });
 }).
 then(function(users) {

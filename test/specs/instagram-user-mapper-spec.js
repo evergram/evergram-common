@@ -58,8 +58,6 @@ describe('Map Instagram User profile to Pixy User model', function() {
         
         should.exist(newUser);
 
-        newUser.firstName.should.be.eql("Snoop");
-        newUser.lastName.should.be.eql("Dogg");
         newUser.instagram.id.should.be.eql("1574083");
         newUser.instagram.username.should.be.eql("snoopdogg");
         newUser.instagram.authToken.should.be.eql("1574083.2fd0517.1097afd5d55543e3bbbf7003c49fe3d6");
@@ -119,8 +117,8 @@ describe('Map Instagram User profile to Pixy User model', function() {
         
         should.exist(newUser);
 
-        newUser.firstName.should.be.eql("Snoop");
-        newUser.lastName.should.be.eql("Dogg");
+        newUser.firstName.should.be.eql("Riki");
+        newUser.lastName.should.be.eql("Coates");
         newUser.instagram.id.should.be.eql("1574083");
         newUser.instagram.username.should.be.eql("snoopdogg");
         newUser.instagram.authToken.should.be.eql("1574083.2fd0517.1097afd5d55543e3bbbf7003c49fe3d6");
@@ -130,19 +128,6 @@ describe('Map Instagram User profile to Pixy User model', function() {
         newUser.instagram.profilePicture.should.be.eql("http://distillery.s3.amazonaws.com/profiles/profile_1574083_75sq_1295469061.jpg");
         newUser.instagram.website.should.be.eql("http://snoopdogg.com");
         newUser.instagram.bio.should.be.eql("This is my bio");
-
-        done();
-    });
-
-    it('should split full name across firstname and lastname fields', function(done) {
-        const user = {};
-
-        var newUser = instagramUser.toModel(data, user);
-        
-        should.exist(newUser);
-
-        newUser.firstName.should.not.be.eql("Snoop Dogg");
-        newUser.lastName.should.not.be.eql("Snoop Dogg");
 
         done();
     });
